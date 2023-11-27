@@ -1,5 +1,9 @@
 package ua.edu.ucu.apps;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class CachedDocument extends SmartDocument {
     private static final String DB_URL = "jdbc:sqlite:path_to_your_database.db";
@@ -10,13 +14,13 @@ public class CachedDocument extends SmartDocument {
 
     @Override
     public String parse() {
-        try (Connection conn = DriverManager.getConnection(DB_URL)) {
-            String cachedText = getCachedText(conn);
+        try (Connection CONN = DriverManager.getConnection(DB_URL)) {
+            String cachedText = getCachedText(CONN);
             if (cachedText != null) {
                 return cachedText;
             } else {
                 String parsedText = super.parse();
-                cacheText(conn, parsedText);
+                cacheText(CONN, parsedText);
                 return parsedText;
             }
         } catch (SQLException e) {
@@ -27,9 +31,9 @@ public class CachedDocument extends SmartDocument {
 
     private String getCachedText(Connection conn) throws SQLException {
         String sql = "SELECT content FROM cache WHERE gcsPath = ?";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, this.gcsPath);
-            ResultSet rs = pstmt.executeQuery();
+        try (PreparedStatement PSTMT = conn.prepareStatement(sql)) {
+            PSTMT.setString(1, this.getGcsPath());
+            ResultSet rs = PSTMT.executeQuery();
             if (rs.next()) {
                 return rs.getString("content");
             }
@@ -40,7 +44,7 @@ public class CachedDocument extends SmartDocument {
     private void cacheText(Connection conn, String text) throws SQLException {
         String sql = "INSERT INTO cache (gcsPath, content) VALUES (?, ?)";
         try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, this.gcsPath);
+            pstmt.setString(1, this.getGcsPath());
             pstmt.setString(2, text);
             pstmt.executeUpdate();
         }
