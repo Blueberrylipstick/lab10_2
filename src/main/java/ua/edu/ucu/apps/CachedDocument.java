@@ -43,10 +43,10 @@ public class CachedDocument extends SmartDocument {
 
     private void cacheText(Connection conn, String text) throws SQLException {
         String sql = "INSERT INTO cache (gcsPath, content) VALUES (?, ?)";
-        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, this.getGcsPath());
-            pstmt.setString(2, text);
-            pstmt.executeUpdate();
+        try (PreparedStatement PSTMT = conn.prepareStatement(sql)) {
+            PSTMT.setString(1, this.getGcsPath());
+            PSTMT.setString(2, text);
+            PSTMT.executeUpdate();
         }
     }
 }
